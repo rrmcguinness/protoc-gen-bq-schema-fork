@@ -1,0 +1,9 @@
+This package has been refactored from: (https://github.com/GoogleCloudPlatform/protoc-gen-bq-schema) and converted into a Bazel project.
+
+The primary source code is intact, but the generated files and copied
+dependencies have been removed.
+
+Note: The original Copyright in the original text IS incomplete, below is a link
+to the version on file as of this refactor
+
+https://github.com/GoogleCloudPlatform/protoc-gen-bq-schema/commit/c0cc1a0cd70f8ff838aee32e5e105d40f1df46ff

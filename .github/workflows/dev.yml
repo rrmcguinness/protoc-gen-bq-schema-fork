@@ -49,5 +49,5 @@ jobs:
         path: "/home/runner/.cache/bazel_win"
         key: bazel
     - name: Test
-      run: bazel test //...
+      run: bazel test test/...
       shell: bash

@@ -14,7 +14,7 @@
 
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
-load("//:conf/deps.bzl", "COMP_DEPS")
+load("//:configs/deps.bzl", "COMP_DEPS")
 
 go_proto_library(
     name = "bq_schema_go_proto_lib",

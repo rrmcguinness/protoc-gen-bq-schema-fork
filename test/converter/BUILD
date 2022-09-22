@@ -13,7 +13,7 @@
 # limitations under the License.
 
 load("@io_bazel_rules_go//go:def.bzl", "go_test")
-load("//:conf/deps.bzl", "COMP_DEPS")
+load("//:configs/deps.bzl", "COMP_DEPS")
 
 go_test(
     name = "converter",

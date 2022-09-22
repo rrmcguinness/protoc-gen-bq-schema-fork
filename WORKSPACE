@@ -17,7 +17,7 @@ workspace(name = "Google_Retail_Platform")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Load the Google API definitions for use with Protobufs
-load("//:conf/repository_rules.bzl", "switched_rules_by_language")
+load("//:configs/repository_rules.bzl", "switched_rules_by_language")
 
 switched_rules_by_language(
     name = "com_google_googleapis_imports",
@@ -94,9 +94,9 @@ http_archive(
 )
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
-load("//:conf/go_deps.bzl", "go_dependencies")
+load("//:configs/go_deps.bzl", "go_dependencies")
 
-# gazelle:repository_macro conf/go_deps.bzl%go_dependencies
+# gazelle:repository_macro configs/go_deps.bzl%go_dependencies
 go_dependencies()
 
 protobuf_deps()

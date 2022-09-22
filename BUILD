@@ -15,7 +15,7 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
-load("//:conf/deps.bzl", "COMP_DEPS")
+load("//:configs/deps.bzl", "COMP_DEPS")
 load("@rules_pkg//:pkg.bzl", "pkg_zip")
 
 package(default_visibility = ["//:__subpackages__"])
@@ -33,7 +33,7 @@ gazelle(
     name = "gazelle-update-repos",
     args = [
         "-from_file=go.mod",
-        "-to_macro=conf/go_deps.bzl%go_dependencies",
+        "-to_macro=configs/go_deps.bzl%go_dependencies",
         "-prune",
     ],
     command = "update-repos",

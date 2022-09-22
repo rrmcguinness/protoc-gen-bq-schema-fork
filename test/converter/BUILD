@@ -12,27 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
 load("//:conf/deps.bzl", "COMP_DEPS")
 
-go_proto_library(
-    name = "bq_schema_go_proto_lib",
-    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos",
-    proto = "//api:bq_schema_proto_lib",
-    visibility = ["//:__subpackages__"],
-)
-
-go_library(
+go_test(
     name = "converter",
     srcs = [
-        "comments.go",
-        "convert.go",
-        "protopackage.go",
+        "comments_test.go",
+        "field_option_test.go",
+        "plugin_test.go",
     ],
-    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/converter",
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":bq_schema_go_proto_lib",
-    ] + COMP_DEPS,
+    embed = ["//internal/converter"],
+    deps = COMP_DEPS,
 )

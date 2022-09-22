@@ -16,6 +16,7 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("//:conf/deps.bzl", "COMP_DEPS")
+load("@rules_pkg//:pkg.bzl", "pkg_zip")
 
 package(default_visibility = ["//:__subpackages__"])
 
@@ -39,12 +40,42 @@ gazelle(
 )
 
 go_binary(
-    name = "protoc-gen-bq-schema",
+    name = "protoc_gen_bq_schema",
     srcs = [
         "main.go",
     ],
     out = "protoc-gen-bq-schema",
     deps = [
-        "//internal/converter:bq_schema_go_lib",
+        "//internal/converter",
     ] + COMP_DEPS,
+)
+
+pkg_zip(
+    name = "protoc_gen_bq_schema_src",
+    srcs = glob([
+        "api/*",
+        "conf/*",
+        "docs/*",
+        "internal/*",
+        "test/*",
+        "main.go",
+        "BUILD",
+        "LICENSE",
+        "NOTICE",
+        "WORKSPACE",
+        "README.md",
+        "go.mod",
+    ]),
+    out = "protoc_gen_bq_schema-v1-src.zip",
+)
+
+pkg_zip(
+    name = "protoc_gen_bq_schema_zip",
+    srcs = [
+        "LICENSE",
+        "NOTICE",
+        "README.md",
+        ":protoc_gen_bq_schema",
+    ],
+    out = "protoc_gen_bq_schema-v1.zip",
 )

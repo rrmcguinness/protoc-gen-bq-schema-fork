@@ -77,3 +77,4 @@ jobs:
     - name: Test
       run: |
         "${GITHUB_WORKSPACE}/bin/bazel" test //...
+      shell: bash

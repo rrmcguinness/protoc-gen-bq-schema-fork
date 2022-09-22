@@ -69,11 +69,11 @@ jobs:
 
     - name: Install bazelisk
       run: |
-        curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.14.0/bazelisk-windows-amd64"
+        curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.14.0/bazelisk-windows-amd64.exe"
         mkdir -p "${GITHUB_WORKSPACE}/bin/"
-        mv bazelisk-windows-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
+        mv bazelisk-windows-amd64.exe "${GITHUB_WORKSPACE}/bin/bazel.exe"
         chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
 
     - name: Test
       run: |
-        "${GITHUB_WORKSPACE}/bin/bazel" test //...
+        "${GITHUB_WORKSPACE}/bin/bazel.exe" test //...

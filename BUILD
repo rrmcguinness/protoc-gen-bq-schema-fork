@@ -43,7 +43,7 @@ go_binary(
     srcs = [
         "main.go",
     ],
-    out = "bq-schema-generator",
+    out = "protoc-gen-bq-schema",
     deps = [
         "//internal/converter:bq_schema_go_lib",
     ] + COMP_DEPS,

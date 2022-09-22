@@ -5,4 +5,6 @@
 bazel-*
 
 # Ignore binary that it builds
+# Note, with bazel the output is in the symlinked bazel-bin directory.
+# the binary out name is the same, but not committed
 protoc-gen-bq-schema

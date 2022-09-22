@@ -72,7 +72,7 @@ jobs:
         curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.14.0/bazelisk-windows-amd64.exe"
         mkdir -p "${GITHUB_WORKSPACE}/bin/"
         mv bazelisk-windows-amd64.exe "${GITHUB_WORKSPACE}/bin/bazel.exe"
-        chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
+        chmod +x "${GITHUB_WORKSPACE}/bin/bazel.exe"
 
     - name: Test
       run: |

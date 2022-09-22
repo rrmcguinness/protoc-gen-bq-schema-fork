@@ -39,6 +39,47 @@ gazelle(
     command = "update-repos",
 )
 
+platform(
+    name = "linux_arm",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:arm",
+    ],
+)
+
+platform(
+    name = "linux_x86",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+        ":glibc_2_25",
+    ],
+)
+
+platform(
+    name = "windows",
+    constraint_values = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+platform(
+    name = "osx_x86",
+    constraint_values = [
+        "@platforms//os:osx",
+        "@platforms//cpu:x86_64",
+    ],
+)
+
+platform(
+    name = "osx_arm",
+    constraint_values = [
+        "@platforms//os:osx",
+        "@platforms//cpu:arm",
+    ],
+)
+
 go_binary(
     name = "protoc_gen_bq_schema",
     srcs = [
@@ -49,6 +90,12 @@ go_binary(
         "//internal/converter",
     ] + COMP_DEPS,
 )
+
+#go_cross_binary(
+#    name = "protoc_gen_bq_schema_linux",
+#    platform = ":linux_x86",
+#    target = ":protoc_gen_bq_schema",
+#)
 
 pkg_zip(
     name = "protoc_gen_bq_schema_src",

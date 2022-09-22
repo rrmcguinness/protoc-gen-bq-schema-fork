@@ -40,7 +40,7 @@ jobs:
     - name: Mount bazel cache
       uses: actions/cache@v1
       with:
-        path: "/home/runner/.cache/bazel"
+        path: "/home/runner/.cache/bazel_osx"
         key: bazel
 
     - name: Install bazelisk
@@ -64,16 +64,16 @@ jobs:
     - name: Mount bazel cache
       uses: actions/cache@v1
       with:
-        path: "/home/runner/.cache/bazel"
+        path: "/home/runner/.cache/bazel_win"
         key: bazel
 
     - name: Install bazelisk
       run: |
-        curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.14.0/bazelisk-windows-amd64.exe"
+        curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.14.0/bazelisk-windows-amd64"
         mkdir -p "${GITHUB_WORKSPACE}/bin/"
-        mv bazelisk-windows-amd64.exe "${GITHUB_WORKSPACE}/bin/bazel.exe"
-        chmod +x "${GITHUB_WORKSPACE}/bin/bazel.exe"
+        mv bazelisk-windows-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
+        chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
 
     - name: Test
       run: |
-        "${GITHUB_WORKSPACE}/bin/bazel.exe" test //...
+        "${GITHUB_WORKSPACE}/bin/bazel" test //...

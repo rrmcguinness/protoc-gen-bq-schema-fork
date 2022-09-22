@@ -73,6 +73,7 @@ jobs:
         mkdir -p "${GITHUB_WORKSPACE}/bin/"
         mv bazelisk-windows-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
         chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
+      shell: bash
 
     - name: Test
       run: |

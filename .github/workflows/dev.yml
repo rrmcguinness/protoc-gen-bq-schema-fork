@@ -56,7 +56,7 @@ jobs:
 
   build-windows:
     name: "Windows OS build"
-    runs-on: macos-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v1

@@ -20,9 +20,12 @@ option go_package = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
 import "google/protobuf/descriptor.proto";
 
 
-// Message containing options related to BigQuery schema generation
-// and management via Protobuf.
+/*
+ * Message containing options related to BigQuery schema generation
+ * and management via Protobuf.
+ */
 message BigQueryFieldOptions {
+
   // Flag to specify that a field should be marked as 'REQUIRED' when
   // used to generate schema for BigQuery.
   bool require = 1;

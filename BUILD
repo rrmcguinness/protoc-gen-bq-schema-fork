@@ -63,12 +63,7 @@ proto_plugin(
         "QUIRK_OUT_PASS_ROOT",
         "QUIRK_DIRECT_MODE",
     ],
-    tool = select({
-        "@bazel_tools//src/conditions:darwin_arm64": ":protoc_gen_bq_schema",
-        "@bazel_tools//src/conditions:darwin_x86_64": ":protoc_gen_bq_schema",
-        "@bazel_tools//src/conditions:linux_x86_64": ":protoc_gen_bq_schema",
-        "@bazel_tools//src/conditions:windows": ":protoc_gen_bq_schema",
-    }),
+    tool = ":protoc_gen_bq_schema",
     visibility = ["//visibility:public"],
 )
 

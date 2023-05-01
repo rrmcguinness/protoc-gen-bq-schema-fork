@@ -12,7 +12,7 @@ _bq_schema_compile = rule(
         _plugins = attr.label_list(
             providers = [ProtoPluginInfo],
             default = [
-                Label("//:bq_plugin"),
+                Label("//:bq_schema"),
             ],
             doc = "List of protoc plugins to apply",
         ),

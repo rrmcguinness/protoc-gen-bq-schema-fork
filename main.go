@@ -70,4 +70,6 @@ func main() {
 	} else {
 		glog.Info("Failed to process code generator but successfully sent the error to protoc")
 	}
+
+	glog.Flush()
 }

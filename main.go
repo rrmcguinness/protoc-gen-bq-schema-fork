@@ -38,7 +38,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var ignorePrefix = flag.Bool("ignore-prefix", false, "Tells the writer to ignore the package prefix for the output file.")
+var ignorePrefix = flag.Bool("ignorePrefix", false, "Tells the writer to ignore the package prefix for the output file.")
 
 func main() {
 	flag.Parse()

@@ -53,10 +53,9 @@ go_binary(
 )
 
 proto_plugin(
-    name = "bq_plugin",
+    name = "bq_schema",
     out = "{name}.schema",
     options = [
-        "schema",
         "{name}.schema",
     ],
     quirks = [

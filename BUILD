@@ -54,9 +54,9 @@ go_binary(
 
 proto_plugin(
     name = "bq_schema",
-    out = "{name}.schema",
-    options = [
-        "{name}.schema",
+    output_directory = True,
+    outputs = [
+        "{basename}.schema",
     ],
     quirks = [
         "QUIRK_OUT_PASS_ROOT",

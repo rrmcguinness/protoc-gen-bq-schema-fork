@@ -318,7 +318,7 @@ func convertMessageType(
 	return
 }
 
-func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorResponse_File, error) {
+func convertFile(file *descriptor.FileDescriptorProto, ignorePrefix bool) ([]*plugin.CodeGeneratorResponse_File, error) {
 	name := path.Base(file.GetName())
 	pkg, ok := globalPkg.relativelyLookupPackage(file.GetPackage())
 	if !ok {
@@ -356,8 +356,15 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 			return nil, err
 		}
 
+		var resName *string
+		if ignorePrefix {
+			resName = proto.String(fmt.Sprintf("%s.schema", tableName))
+		} else {
+			resName = proto.String(fmt.Sprintf("%s/%s.schema", strings.Replace(file.GetPackage(), ".", "/", -1), tableName))
+		}
+
 		resFile := &plugin.CodeGeneratorResponse_File{
-			Name:    proto.String(fmt.Sprintf("%s/%s.schema", strings.Replace(file.GetPackage(), ".", "/", -1), tableName)),
+			Name:    resName,
 			Content: proto.String(string(jsonSchema)),
 		}
 		response = append(response, resFile)
@@ -401,7 +408,7 @@ func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam s
 	})
 }
 
-func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
+func Convert(req *plugin.CodeGeneratorRequest, ignorePrefix bool) (*plugin.CodeGeneratorResponse, error) {
 	generateTargets := make(map[string]bool)
 	for _, file := range req.GetFileToGenerate() {
 		generateTargets[file] = true
@@ -418,7 +425,7 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 		if _, ok := generateTargets[file.GetName()]; ok {
 			glog.V(1).Info("Converting ", file.GetName())
 			handleSingleMessageOpt(file, req.GetParameter())
-			converted, err := convertFile(file)
+			converted, err := convertFile(file, ignorePrefix)
 			if err != nil {
 				res.Error = proto.String(fmt.Sprintf("Failed to convert %s: %v", file.GetName(), err))
 				return res, err
@@ -431,7 +438,7 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 
 // ConvertFrom converts input from protoc to a CodeGeneratorRequest and starts conversion
 // Returning a CodeGeneratorResponse containing either an error or the results of converting the given proto
-func ConvertFrom(rd io.Reader) (*plugin.CodeGeneratorResponse, error) {
+func ConvertFrom(rd io.Reader, ignorePrefix bool) (*plugin.CodeGeneratorResponse, error) {
 	glog.V(1).Info("Reading code generation request")
 	input, err := ioutil.ReadAll(rd)
 	if err != nil {
@@ -446,5 +453,5 @@ func ConvertFrom(rd io.Reader) (*plugin.CodeGeneratorResponse, error) {
 	}
 
 	glog.V(1).Info("Converting input")
-	return Convert(req)
+	return Convert(req, ignorePrefix)
 }

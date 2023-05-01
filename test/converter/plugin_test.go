@@ -57,7 +57,7 @@ func testConvert(t *testing.T, input string, expectedOutputs map[string]string, 
 		expectedSchema[filename] = parsed
 	}
 
-	res, err := Convert(&req)
+	res, err := Convert(&req, false)
 	if err != nil {
 		t.Fatal("Conversion failed. ", err)
 	}

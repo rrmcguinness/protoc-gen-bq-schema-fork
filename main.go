@@ -38,11 +38,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var ignorePrefix = flag.Bool("ignore-prefix", false, "Tells the writer to ignore the package prefix for the output file.")
+
 func main() {
 	flag.Parse()
 	ok := true
-	glog.Info("Processing code generator request")
-	res, err := converter.ConvertFrom(os.Stdin)
+	glog.Infof("Processing code generator request, ignoring prefix: %s", ignorePrefix)
+	res, err := converter.ConvertFrom(os.Stdin, *ignorePrefix)
 	if err != nil {
 		ok = false
 		if res == nil {

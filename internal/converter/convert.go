@@ -358,7 +358,7 @@ func convertFile(file *descriptor.FileDescriptorProto, ignorePrefix bool) ([]*pl
 
 		var resName *string
 		if ignorePrefix {
-			resName = proto.String(fmt.Sprintf("%s.schema", tableName))
+			resName = proto.String(fmt.Sprintf("/%s.schema", tableName))
 		} else {
 			resName = proto.String(fmt.Sprintf("%s/%s.schema", strings.Replace(file.GetPackage(), ".", "/", -1), tableName))
 		}

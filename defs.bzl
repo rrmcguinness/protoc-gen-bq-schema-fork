@@ -11,6 +11,9 @@ _bq_schema_compile = rule(
         proto_compile_attrs,
         _plugins = attr.label_list(
             providers = [ProtoPluginInfo],
+            options = {
+              "ignorePrefix": ["true"]
+            },
             default = [
                 Label("//:bq-schema"),
             ],

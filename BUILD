@@ -46,6 +46,7 @@ go_binary(
         "main.go",
     ],
     out = "protoc-gen-bq-schema",
+    visibility = ["//visibility:public"],
     deps = [
         "//internal/converter",
     ] + COMP_DEPS,

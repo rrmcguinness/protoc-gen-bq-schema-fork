@@ -9,6 +9,9 @@ _bq_schema_compile = rule(
     implementation = proto_compile_impl,
     attrs = dict(
         proto_compile_attrs,
+        ignorePrefix = attr.bool(
+            doc = "Determines if the package is added as a prefix to the file",
+        ),
         _plugins = attr.label_list(
             providers = [ProtoPluginInfo],
             default = [

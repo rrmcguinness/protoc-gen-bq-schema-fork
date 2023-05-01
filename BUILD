@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_proto_grpc//:defs.bzl", "proto_plugin")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
@@ -48,6 +49,26 @@ go_binary(
     deps = [
         "//internal/converter",
     ] + COMP_DEPS,
+)
+
+proto_plugin(
+    name = "bq_plugin",
+    out = "{name}.schema",
+    options = [
+        "schema",
+        "{name}.schema",
+    ],
+    quirks = [
+        "QUIRK_OUT_PASS_ROOT",
+        "QUIRK_DIRECT_MODE",
+    ],
+    tool = select({
+        "@bazel_tools//src/conditions:darwin_arm64": ":protoc_gen_bq_schema",
+        "@bazel_tools//src/conditions:darwin_x86_64": ":protoc_gen_bq_schema",
+        "@bazel_tools//src/conditions:linux_x86_64": ":protoc_gen_bq_schema",
+        "@bazel_tools//src/conditions:windows": ":protoc_gen_bq_schema",
+    }),
+    visibility = ["//visibility:public"],
 )
 
 pkg_zip(

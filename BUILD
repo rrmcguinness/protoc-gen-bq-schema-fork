@@ -56,7 +56,6 @@ proto_plugin(
     name = "bq-schema",
     output_directory = True,
     quirks = [
-        "QUIRK_OUT_PASS_ROOT",
         "QUIRK_DIRECT_MODE",
     ],
     tool = ":protoc_gen_bq_schema",

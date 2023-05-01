@@ -71,5 +71,6 @@ func main() {
 		glog.Info("Failed to process code generator but successfully sent the error to protoc")
 	}
 
+	// ensure the log is written before the program exits
 	glog.Flush()
 }

@@ -446,6 +446,10 @@ func ConvertFrom(rd io.Reader, ignorePrefix bool) (*plugin.CodeGeneratorResponse
 		return nil, err
 	}
 	req := &plugin.CodeGeneratorRequest{}
+	parms := req.Parameter
+
+	glog.Infof("Protoc Arguments: %s", parms)
+
 	err = proto.Unmarshal(input, req)
 	if err != nil {
 		glog.Error("Can't unmarshal input:", err)

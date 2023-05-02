@@ -454,6 +454,9 @@ func ConvertFrom(rd io.Reader, ignorePrefix bool) (*plugin.CodeGeneratorResponse
 
 	parms := req.GetParameter()
 	glog.Infof("Protoc Arguments: %s", parms)
+	if strings.HasPrefix(parms, "ignorePrefix=true") {
+		ignorePrefix = true
+	}
 
 	glog.V(1).Info("Converting input")
 	return Convert(req, ignorePrefix)

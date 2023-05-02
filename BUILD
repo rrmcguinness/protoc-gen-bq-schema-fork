@@ -56,7 +56,7 @@ proto_plugin(
     name = "bq-schema",
     output_directory = True,
     options = {
-      ignorePrefix: True,
+      "ignorePrefix": ["true"],
     },
     quirks = [
         "QUIRK_DIRECT_MODE",

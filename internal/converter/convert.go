@@ -446,7 +446,7 @@ func ConvertFrom(rd io.Reader, ignorePrefix bool) (*plugin.CodeGeneratorResponse
 		return nil, err
 	}
 	req := &plugin.CodeGeneratorRequest{}
-	parms := req.Parameter
+	parms := req.GetParameter()
 
 	glog.Infof("Protoc Arguments: %s", parms)
 

@@ -55,9 +55,7 @@ go_binary(
 proto_plugin(
     name = "bq-schema",
     output_directory = True,
-    options = {
-      "ignorePrefix": ["true"],
-    },
+    options = ["--ignorePrefix=true"],
     quirks = [
         "QUIRK_DIRECT_MODE",
     ],

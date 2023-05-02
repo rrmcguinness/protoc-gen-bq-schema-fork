@@ -38,6 +38,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// a command line parameter to chop the package name if desired, since most tables are bound for a single dataset.
 var ignorePrefix = flag.Bool("ignorePrefix", false, "Tells the writer to ignore the package prefix for the output file.")
 
 func main() {

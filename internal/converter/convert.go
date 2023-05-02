@@ -356,6 +356,7 @@ func convertFile(file *descriptor.FileDescriptorProto, ignorePrefix bool) ([]*pl
 			return nil, err
 		}
 
+		// Added logic to remove the package if the ignore prefix is true.
 		var resName *string
 		if ignorePrefix {
 			resName = proto.String(fmt.Sprintf("/%s.schema", tableName))
@@ -452,9 +453,12 @@ func ConvertFrom(rd io.Reader, ignorePrefix bool) (*plugin.CodeGeneratorResponse
 		return nil, err
 	}
 
-	parms := req.GetParameter()
-	glog.Infof("Protoc Arguments: %s", parms)
-	if strings.HasPrefix(parms, "ignorePrefix=true") {
+	// Since protoc DOES NOT pass in parameters as command line arguments,
+	// we need to evaluate them here. In this scenario, this is being passed in
+	// via the plugin definition in the build.
+	protocParameters := req.GetParameter()
+	glog.Infof("Protoc Arguments: %s", protocParameters)
+	if strings.HasPrefix(protocParameters, "ignorePrefix=true") {
 		ignorePrefix = true
 	}
 

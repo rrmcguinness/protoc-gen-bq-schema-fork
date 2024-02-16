@@ -79,7 +79,7 @@ pkg_zip(
         "README.md",
         "go.mod",
     ]),
-    out = "protoc_gen_bq_schema-v1-src.zip",
+    out = "protoc_gen_bq_schema-v1.2.0-src.zip",
 )
 
 pkg_zip(
@@ -90,5 +90,5 @@ pkg_zip(
         "README.md",
         ":protoc_gen_bq_schema",
     ],
-    out = "protoc_gen_bq_schema-v1.zip",
+    out = "protoc_gen_bq_schema-v1.2.0.zip",
 )

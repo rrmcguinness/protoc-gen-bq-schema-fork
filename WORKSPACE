@@ -74,10 +74,10 @@ go_register_toolchains(version = "1.21.3")
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "616bb3536ac1fff3fb1a141450fa28b875e985712170ea7f1bfe5e5fc41e2cd8",
-    strip_prefix = "protobuf-24.4",
+    sha256 = "d19643d265b978383352b3143f04c0641eea75a75235c111cc01a1350173180e",
+    strip_prefix = "protobuf-25.3",
     urls = [
-        "https://github.com/protocolbuffers/protobuf/releases/download/v24.4/protobuf-24.4.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/releases/download/v25.3/protobuf-25.3.tar.gz",
     ],
 )
 
@@ -92,10 +92,11 @@ http_archive(
 
 http_archive(
     name = "rules_proto_grpc",
-    sha256 = "f87d885ebfd6a1bdf02b4c4ba5bf6fb333f90d54561e4d520a8413c8d1fb7beb",
-    strip_prefix = "rules_proto_grpc-4.5.0",
-    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.5.0.tar.gz"],
+    sha256 = "2a0860a336ae836b54671cbbe0710eec17c64ef70c4c5a88ccfd47ea6e3739bd",
+    strip_prefix = "rules_proto_grpc-4.6.0",
+    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/releases/download/4.6.0/rules_proto_grpc-4.6.0.tar.gz"],
 )
+
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 load("//:configs/go_deps.bzl", "go_dependencies")

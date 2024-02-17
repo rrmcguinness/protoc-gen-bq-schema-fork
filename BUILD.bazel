@@ -12,14 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_proto_grpc//:defs.bzl", "proto_plugin")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
-load("//:configs/deps.bzl", "COMP_DEPS")
 load("@rules_pkg//:pkg.bzl", "pkg_zip")
+load("@rules_proto_grpc//:defs.bzl", "proto_plugin")
+load("//:configs/deps.bzl", "COMP_DEPS")
+
 
 package(default_visibility = ["//:__subpackages__"])
+
+VERSION = "1.2.0"
 
 buildifier(
     name = "buildifier",
@@ -71,15 +74,16 @@ pkg_zip(
         "docs/*",
         "internal/*",
         "test/*",
+    ] + [
         "main.go",
-        "BUILD",
+        "BUILD.bazel",
         "LICENSE",
         "NOTICE",
         "WORKSPACE",
         "README.md",
         "go.mod",
     ]),
-    out = "protoc_gen_bq_schema-v1.2.0-src.zip",
+    out = "protoc_gen_bq_schema-v%s-src.zip" % VERSION,
 )
 
 pkg_zip(
@@ -90,5 +94,5 @@ pkg_zip(
         "README.md",
         ":protoc_gen_bq_schema",
     ],
-    out = "protoc_gen_bq_schema-v1.2.0.zip",
+    out = "protoc_gen_bq_schema-v%s.zip" % VERSION,
 )

@@ -1,0 +1,16 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "protos",
+    srcs = [
+        "bq_field.pb.go",
+        "bq_table.pb.go",
+    ],
+    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3/protos",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@org_golang_google_protobuf//reflect/protoreflect",
+        "@org_golang_google_protobuf//runtime/protoimpl",
+        "@org_golang_google_protobuf//types/descriptorpb",
+    ],
+)

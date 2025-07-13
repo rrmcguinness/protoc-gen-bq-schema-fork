@@ -12,15 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
-load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
-load("//:configs/deps.bzl", "COMP_DEPS")
+load("@rules_go//go:def.bzl", "go_library")
+load("@rules_proto_grpc_go//:defs.bzl", "go_proto_library")
 
 go_proto_library(
     name = "bq_schema_go_proto_lib",
-    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos",
-    proto = "//api:bq_schema_proto_lib",
+    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3/protos",
+    protos = ["//api:bq_schema_proto_lib"],
     visibility = ["//:__subpackages__"],
+    deps = [
+        "@org_golang_google_protobuf//types/descriptorpb",
+    ],
 )
 
 go_library(
@@ -30,9 +32,14 @@ go_library(
         "convert.go",
         "protopackage.go",
     ],
-    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/converter",
+    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3/internal/converter",
     visibility = ["//:__subpackages__"],
     deps = [
         ":bq_schema_go_proto_lib",
-    ] + COMP_DEPS,
+        "@com_github_golang_glog//:glog",
+        "@org_golang_google_protobuf//encoding/prototext",
+        "@org_golang_google_protobuf//proto",
+        "@org_golang_google_protobuf//types/descriptorpb",
+        "@org_golang_google_protobuf//types/pluginpb",
+    ],
 )

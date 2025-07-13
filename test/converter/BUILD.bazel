@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@io_bazel_rules_go//go:def.bzl", "go_test")
-load("//:configs/deps.bzl", "COMP_DEPS")
+load("@rules_go//go:def.bzl", "go_test")
 
 go_test(
     name = "converter",
@@ -22,6 +21,26 @@ go_test(
         "field_option_test.go",
         "plugin_test.go",
     ],
-    embed = ["//internal/converter"],
-    deps = COMP_DEPS,
+    deps = [
+        "//internal/converter",
+        "@org_golang_google_protobuf//encoding/prototext",
+        "@org_golang_google_protobuf//proto",
+        "@org_golang_google_protobuf//types/descriptorpb",
+        "@org_golang_google_protobuf//types/pluginpb",
+    ],
+)
+
+go_test(
+    name = "converter_test",
+    srcs = [
+        "comments_test.go",
+        "field_option_test.go",
+        "plugin_test.go",
+    ],
+    deps = [
+        "//internal/converter",
+        "@org_golang_google_protobuf//encoding/prototext",
+        "@org_golang_google_protobuf//types/descriptorpb",
+        "@org_golang_google_protobuf//types/pluginpb",
+    ],
 )

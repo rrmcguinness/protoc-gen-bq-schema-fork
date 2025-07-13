@@ -20,7 +20,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
+	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
 
 const (

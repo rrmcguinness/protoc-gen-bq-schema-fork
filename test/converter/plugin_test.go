@@ -18,11 +18,11 @@ package converter
 
 import (
 	"encoding/json"
+	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3/internal/converter"
+	"google.golang.org/protobuf/encoding/prototext"
+	plugin "google.golang.org/protobuf/types/pluginpb"
 	"reflect"
 	"testing"
-
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
-	"google.golang.org/protobuf/encoding/prototext"
 )
 
 // schema is an internal representation of generated BigQuery schema
@@ -57,7 +57,7 @@ func testConvert(t *testing.T, input string, expectedOutputs map[string]string, 
 		expectedSchema[filename] = parsed
 	}
 
-	res, err := Convert(&req, false)
+	res, err := converter.Convert(&req)
 	if err != nil {
 		t.Fatal("Conversion failed. ", err)
 	}
@@ -311,8 +311,8 @@ func TestTypes(t *testing.T) {
 				{ "name": "bool", "type": "BOOLEAN", "mode": "NULLABLE" },
 				{ "name": "str", "type": "STRING", "mode": "NULLABLE" },
 				{ "name": "bytes", "type": "BYTES", "mode": "NULLABLE" },
-				{ "name": "enum1", "type": "STRING", "mode": "NULLABLE" },
-				{ "name": "enum2", "type": "STRING", "mode": "NULLABLE" },
+				{ "name": "enum1", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "enum2", "type": "INTEGER", "mode": "NULLABLE" },
 				{
 					"name": "grp1", "type": "RECORD", "mode": "NULLABLE",
 					"fields": [{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" }]
@@ -418,7 +418,7 @@ func TestWellKnownTypes(t *testing.T) {
 				{ "name": "bool", "type": "BOOLEAN", "mode": "NULLABLE" },
 				{ "name": "str", "type": "STRING", "mode": "NULLABLE" },
 				{ "name": "bytes", "type": "BYTES", "mode": "NULLABLE" },
-				{ "name": "du", "type": "STRING", "mode": "NULLABLE" },
+				{ "name": "du", "type": "INTERVAL", "mode": "NULLABLE" },
 				{ "name": "t", "type": "TIMESTAMP", "mode": "NULLABLE" }
 			]`,
 		})
@@ -503,6 +503,157 @@ func TestExtraFields(t *testing.T) {
 					]
 				},
 				{ "name": "i6", "type": "FLOAT", "mode": "REQUIRED" }
+			]`,
+		})
+}
+
+func TestOrderSchemaByFieldNumber(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package.nested"
+				message_type <
+					name: "FooProto"
+					field < name: "first" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "third" number: 3 type: TYPE_INT32 label: LABEL_REQUIRED >
+					field < name: "second" number: 2 type: TYPE_INT32 label: LABEL_REPEATED >
+					options < [gen_bq_schema.bigquery_opts] <
+						table_name: "foo_table"
+						output_field_order: 1
+						>
+					>
+				>
+			>
+		`,
+		map[string]string{
+			"example_package/nested/foo_table.schema": `[
+				{ "name": "first", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "second", "type": "INTEGER", "mode": "REPEATED" },
+				{ "name": "third", "type": "INTEGER", "mode": "REQUIRED" }
+			]`,
+		})
+}
+
+func TestNestedOrderSchemaByFieldNumber(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package"
+				message_type <
+					name: "FooProto"
+					field < name: "f_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "f_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field <
+							name: "bar"
+							number: 2
+							type: TYPE_MESSAGE
+							label: LABEL_OPTIONAL
+              type_name: "BarProto"
+						>
+					options < [gen_bq_schema.bigquery_opts] <
+						table_name: "foo_table"
+						output_field_order: 1
+						>
+					>
+				>
+				message_type <
+					name: "BarProto"
+					field < name: "b_2" number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					options < [gen_bq_schema.bigquery_opts] <
+					output_field_order: 1
+					>
+					>
+				>
+				>
+		`,
+		map[string]string{
+			"example_package/foo_table.schema": `[
+				{ "name": "f_1", "type": "INTEGER", "mode": "NULLABLE" },
+				{
+					"name": "bar", "type": "RECORD", "mode": "NULLABLE",
+					"fields": [
+						{ "name": "b_1", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_2", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_3", "type": "INTEGER", "mode": "NULLABLE" }
+					]
+				},
+				{ "name": "f_3", "type": "INTEGER", "mode": "NULLABLE" }
+			]`,
+		})
+}
+
+func TestMultipleMessageOrderByFieldNumber(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package"
+				message_type <
+					name: "FooProto"
+					field < name: "f_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "f_3" number: 4 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field <
+							name: "bar_ordered"
+							number: 2
+							type: TYPE_MESSAGE
+							label: LABEL_OPTIONAL
+              type_name: "BarOrderedProto"
+						>
+						field <
+							name: "bar_unordered"
+							number: 3
+							type: TYPE_MESSAGE
+							label: LABEL_OPTIONAL
+              type_name: "BarUnOrderedProto"
+						>
+					options < [gen_bq_schema.bigquery_opts] <
+						table_name: "foo_table"
+						output_field_order: 1
+						>
+					>
+				>
+				message_type <
+					name: "BarOrderedProto"
+					field < name: "b_2" number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					options < [gen_bq_schema.bigquery_opts] <
+						output_field_order: 1
+					>
+					>
+				>
+				message_type <
+					name: "BarUnOrderedProto"
+					field < name: "b_2" number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+				>
+				>
+		`,
+		map[string]string{
+			"example_package/foo_table.schema": `[
+				{ "name": "f_1", "type": "INTEGER", "mode": "NULLABLE" },
+				{
+					"name": "bar_ordered", "type": "RECORD", "mode": "NULLABLE",
+					"fields": [
+						{ "name": "b_1", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_2", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_3", "type": "INTEGER", "mode": "NULLABLE" }
+					]
+				},
+				{
+					"name": "bar_unordered", "type": "RECORD", "mode": "NULLABLE",
+					"fields": [
+						{ "name": "b_2", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_3", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_1", "type": "INTEGER", "mode": "NULLABLE" }
+					]
+				},
+				{ "name": "f_3", "type": "INTEGER", "mode": "NULLABLE" }
 			]`,
 		})
 }

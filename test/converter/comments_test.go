@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3/internal/converter"
 	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
 
@@ -27,7 +28,7 @@ func TestParseComments(t *testing.T) {
 	trailingComment := "trailing comment"
 	subMessageFieldLeadingComment := "submessage field leading comment"
 
-	actual := ParseComments(
+	actual := converter.ParseComments(
 		&descriptor.FileDescriptorProto{
 			SourceCodeInfo: &descriptor.SourceCodeInfo{
 				Location: []*descriptor.SourceCodeInfo_Location{
@@ -46,7 +47,7 @@ func TestParseComments(t *testing.T) {
 		},
 	)
 
-	expected := Comments(map[string]string{
+	expected := converter.Comments(map[string]string{
 		"4.0":         "leading comment\n\ntrailing comment",
 		"4.0.3.0.2.0": "submessage field leading comment",
 	})
@@ -57,7 +58,7 @@ func TestParseComments(t *testing.T) {
 }
 
 func TestParseCommentsWithoutComments(t *testing.T) {
-	actual := ParseComments(
+	actual := converter.ParseComments(
 		&descriptor.FileDescriptorProto{
 			SourceCodeInfo: &descriptor.SourceCodeInfo{
 				Location: []*descriptor.SourceCodeInfo_Location{
@@ -69,7 +70,7 @@ func TestParseCommentsWithoutComments(t *testing.T) {
 		},
 	)
 
-	expected := Comments(map[string]string{})
+	expected := converter.Comments(map[string]string{})
 
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("Expectation: %v\n Actual: %v", actual, expected)
@@ -78,7 +79,7 @@ func TestParseCommentsWithoutComments(t *testing.T) {
 
 func TestCommentsGet(t *testing.T) {
 	comment := "comment"
-	comments := ParseComments(
+	comments := converter.ParseComments(
 		&descriptor.FileDescriptorProto{
 			SourceCodeInfo: &descriptor.SourceCodeInfo{
 				Location: []*descriptor.SourceCodeInfo_Location{

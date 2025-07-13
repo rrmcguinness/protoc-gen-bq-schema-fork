@@ -12,53 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
-load("@io_bazel_rules_go//go:def.bzl", "go_binary")
-load("@rules_pkg//:pkg.bzl", "pkg_zip")
+load("@gazelle//:def.bzl", "gazelle")
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_pkg//pkg/private/zip:zip.bzl", "pkg_zip")
 load("@rules_proto_grpc//:defs.bzl", "proto_plugin")
-load("//:configs/deps.bzl", "COMP_DEPS")
-
 
 package(default_visibility = ["//:__subpackages__"])
 
 VERSION = "1.2.0"
 
-buildifier(
-    name = "buildifier",
-)
+gazelle(name = "gazelle")
 
-gazelle(
-    name = "gazelle",
-    prefix = "google_retail_platform",
-)
-
-gazelle(
-    name = "gazelle-update-repos",
-    args = [
-        "-from_file=go.mod",
-        "-to_macro=configs/go_deps.bzl%go_dependencies",
-        "-prune",
+go_library(
+    name = "protoc-gen-bq-schema_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3",
+    deps = [
+        "//internal/converter",
+        "@com_github_golang_glog//:glog",
+        "@org_golang_google_protobuf//proto",
+        "@org_golang_google_protobuf//types/pluginpb",
     ],
-    command = "update-repos",
 )
 
 go_binary(
     name = "protoc_gen_bq_schema",
-    srcs = [
-        "main.go",
-    ],
     out = "protoc-gen-bq-schema",
+    embed = [":protoc-gen-bq-schema_lib"],
     visibility = ["//visibility:public"],
-    deps = [
-        "//internal/converter",
-    ] + COMP_DEPS,
 )
 
 proto_plugin(
     name = "bq-schema",
-    output_directory = True,
     options = ["ignorePrefix=true"],
+    output_directory = True,
     quirks = [
         "QUIRK_DIRECT_MODE",
     ],
@@ -68,21 +55,23 @@ proto_plugin(
 
 pkg_zip(
     name = "protoc_gen_bq_schema_src",
-    srcs = glob([
-        "api/*",
-        "conf/*",
-        "docs/*",
-        "internal/*",
-        "test/*",
-    ] + [
-        "main.go",
-        "BUILD.bazel",
-        "LICENSE",
-        "NOTICE",
-        "WORKSPACE",
-        "README.md",
-        "go.mod",
-    ]),
+    srcs = glob(
+        [
+            "api/*",
+            "docs/**/*",
+            "internal/**/*",
+            "test/*.go",
+        ] + [
+            "main.go",
+            "BUILD.bazel",
+            "LICENSE",
+            "NOTICE",
+            "WORKSPACE",
+            "README.md",
+            "go.mod",
+        ],
+        allow_empty = True,
+    ),
     out = "protoc_gen_bq_schema-v%s-src.zip" % VERSION,
 )
 

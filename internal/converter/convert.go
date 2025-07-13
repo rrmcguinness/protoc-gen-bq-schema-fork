@@ -1,35 +1,19 @@
-/*
-Copyright 2014 Google Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package converter
 
 import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"path"
+	"sort"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
+	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3/protos"
 	"github.com/golang/glog"
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	descriptor "google.golang.org/protobuf/types/descriptorpb"
+	plugin "google.golang.org/protobuf/types/pluginpb"
 )
 
 var (
@@ -43,7 +27,7 @@ var (
 		".google.protobuf.BoolValue":   "BOOLEAN",
 		".google.protobuf.StringValue": "STRING",
 		".google.protobuf.BytesValue":  "BYTES",
-		".google.protobuf.Duration":    "STRING",
+		".google.protobuf.Duration":    "INTERVAL",
 		".google.protobuf.Timestamp":   "TIMESTAMP",
 	}
 	typeFromFieldType = map[descriptor.FieldDescriptorProto_Type]string{
@@ -63,7 +47,7 @@ var (
 
 		descriptor.FieldDescriptorProto_TYPE_STRING: "STRING",
 		descriptor.FieldDescriptorProto_TYPE_BYTES:  "BYTES",
-		descriptor.FieldDescriptorProto_TYPE_ENUM:   "STRING",
+		descriptor.FieldDescriptorProto_TYPE_ENUM:   "INTEGER",
 
 		descriptor.FieldDescriptorProto_TYPE_BOOL: "BOOLEAN",
 
@@ -80,12 +64,13 @@ var (
 
 // Field describes the schema of a field in BigQuery.
 type Field struct {
-	Name        string      `json:"name"`
-	Type        string      `json:"type"`
-	Mode        string      `json:"mode"`
-	Description string      `json:"description,omitempty"`
-	Fields      []*Field    `json:"fields,omitempty"`
-	PolicyTags  *PolicyTags `json:"policyTags,omitempty"`
+	Name                   string      `json:"name"`
+	Type                   string      `json:"type"`
+	Mode                   string      `json:"mode"`
+	Description            string      `json:"description,omitempty"`
+	Fields                 []*Field    `json:"fields,omitempty"`
+	PolicyTags             *PolicyTags `json:"policyTags,omitempty"`
+	DefaultValueExpression string      `json:"defaultValueExpression,omitempty"`
 }
 
 // PolicyTags describes the structure of a Policy Tag
@@ -182,6 +167,14 @@ func convertField(
 				Names: []string{opt.PolicyTags},
 			}
 		}
+
+		if len(opt.DefaultValueExpression) > 0 {
+			field.DefaultValueExpression = opt.DefaultValueExpression
+		}
+	}
+
+	if len(field.Description) > 1024 {
+		field.Description = field.Description[:1021] + "..."
 	}
 
 	if field.Type != "RECORD" {
@@ -289,7 +282,14 @@ func convertMessageType(
 	}
 
 	parentMessages[msg] = true
-	for fieldIndex, fieldDesc := range msg.GetField() {
+	fields := msg.GetField()
+	// Sort fields by the field numbers if the option is set.
+	if opts.GetOutputFieldOrder() == protos.BigQueryMessageOptions_FIELD_ORDER_BY_NUMBER {
+		sort.Slice(fields, func(i, j int) bool {
+			return fields[i].GetNumber() < fields[j].GetNumber()
+		})
+	}
+	for fieldIndex, fieldDesc := range fields {
 		fieldCommentPath := fmt.Sprintf("%s.%d.%d", path, fieldPath, fieldIndex)
 		field, err := convertField(curPkg, fieldDesc, opts, parentMessages, comments, fieldCommentPath)
 		if err != nil {
@@ -318,7 +318,7 @@ func convertMessageType(
 	return
 }
 
-func convertFile(file *descriptor.FileDescriptorProto, ignorePrefix bool) ([]*plugin.CodeGeneratorResponse_File, error) {
+func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorResponse_File, error) {
 	name := path.Base(file.GetName())
 	pkg, ok := globalPkg.relativelyLookupPackage(file.GetPackage())
 	if !ok {
@@ -356,17 +356,9 @@ func convertFile(file *descriptor.FileDescriptorProto, ignorePrefix bool) ([]*pl
 			return nil, err
 		}
 
-		// Added logic to remove the package if the ignore prefix is true.
-		var resName *string
-		if ignorePrefix {
-			resName = proto.String(fmt.Sprintf("/%s.schema", tableName))
-		} else {
-			resName = proto.String(fmt.Sprintf("%s/%s.schema", strings.Replace(file.GetPackage(), ".", "/", -1), tableName))
-		}
-
 		resFile := &plugin.CodeGeneratorResponse_File{
-			Name:    resName,
-			Content: proto.String(string(jsonSchema)),
+			Name:    proto.String(fmt.Sprintf("%s/%s.schema", strings.Replace(file.GetPackage(), ".", "/", -1), tableName)),
+			Content: proto.String(string(jsonSchema) + "\n"),
 		}
 		response = append(response, resFile)
 	}
@@ -409,13 +401,27 @@ func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam s
 	})
 }
 
-func Convert(req *plugin.CodeGeneratorRequest, ignorePrefix bool) (*plugin.CodeGeneratorResponse, error) {
+// enumAsStringOpt handles --bq-schema_opt=enum-as-string in protoc params.
+// providing that param tesll protoc-gen-bq-schema to treat enums as strings.
+func enumAsStringOpt(requestParam string) {
+	if !strings.Contains(requestParam, "enum-as-string") {
+		return
+	}
+	typeFromFieldType[descriptor.FieldDescriptorProto_TYPE_ENUM] = "STRING"
+}
+
+func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
 	generateTargets := make(map[string]bool)
 	for _, file := range req.GetFileToGenerate() {
 		generateTargets[file] = true
 	}
 
-	res := &plugin.CodeGeneratorResponse{}
+	res := &plugin.CodeGeneratorResponse{
+		SupportedFeatures: proto.Uint64(uint64(plugin.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL | plugin.CodeGeneratorResponse_FEATURE_SUPPORTS_EDITIONS)),
+		MinimumEdition:    proto.Int32(int32(descriptor.Edition_EDITION_PROTO2)),
+		MaximumEdition:    proto.Int32(int32(descriptor.Edition_EDITION_MAX)),
+	}
+	enumAsStringOpt(req.GetParameter())
 	for _, file := range req.GetProtoFile() {
 		for msgIndex, msg := range file.GetMessageType() {
 			glog.V(1).Infof("Loading a message type %s from package %s", msg.GetName(), file.GetPackage())
@@ -426,7 +432,7 @@ func Convert(req *plugin.CodeGeneratorRequest, ignorePrefix bool) (*plugin.CodeG
 		if _, ok := generateTargets[file.GetName()]; ok {
 			glog.V(1).Info("Converting ", file.GetName())
 			handleSingleMessageOpt(file, req.GetParameter())
-			converted, err := convertFile(file, ignorePrefix)
+			converted, err := convertFile(file)
 			if err != nil {
 				res.Error = proto.String(fmt.Sprintf("Failed to convert %s: %v", file.GetName(), err))
 				return res, err
@@ -439,9 +445,9 @@ func Convert(req *plugin.CodeGeneratorRequest, ignorePrefix bool) (*plugin.CodeG
 
 // ConvertFrom converts input from protoc to a CodeGeneratorRequest and starts conversion
 // Returning a CodeGeneratorResponse containing either an error or the results of converting the given proto
-func ConvertFrom(rd io.Reader, ignorePrefix bool) (*plugin.CodeGeneratorResponse, error) {
+func ConvertFrom(rd io.Reader) (*plugin.CodeGeneratorResponse, error) {
 	glog.V(1).Info("Reading code generation request")
-	input, err := ioutil.ReadAll(rd)
+	input, err := io.ReadAll(rd)
 	if err != nil {
 		glog.Error("Failed to read request:", err)
 		return nil, err
@@ -453,15 +459,6 @@ func ConvertFrom(rd io.Reader, ignorePrefix bool) (*plugin.CodeGeneratorResponse
 		return nil, err
 	}
 
-	// Since protoc DOES NOT pass in parameters as command line arguments,
-	// we need to evaluate them here. In this scenario, this is being passed in
-	// via the plugin definition in the build.
-	protocParameters := req.GetParameter()
-	glog.Infof("Protoc Arguments: %s", protocParameters)
-	if strings.HasPrefix(protocParameters, "ignorePrefix=true") {
-		ignorePrefix = true
-	}
-
 	glog.V(1).Info("Converting input")
-	return Convert(req, ignorePrefix)
+	return Convert(req)
 }

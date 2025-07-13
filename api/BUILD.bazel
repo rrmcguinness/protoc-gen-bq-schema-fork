@@ -1,3 +1,6 @@
+load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//proto:def.bzl", "go_proto_library")
+
 # Copyright 2014 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +16,7 @@
 # limitations under the License.
 
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@rules_proto_grpc//doc:defs.bzl", "doc_markdown_compile")
+load("@rules_proto_grpc_doc//:defs.bzl", "doc_markdown_compile")
 
 proto_library(
     name = "bq_schema_proto_lib",
@@ -32,5 +35,19 @@ doc_markdown_compile(
     protos = [
         ":bq_schema_proto_lib",
     ],
+    visibility = ["//visibility:public"],
+)
+
+go_proto_library(
+    name = "protos_go_proto",
+    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3/protos",
+    proto = ":bq_schema_proto_lib",
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "protos",
+    embed = [":protos_go_proto"],
+    importpath = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3/protos",
     visibility = ["//visibility:public"],
 )

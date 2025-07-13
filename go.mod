@@ -1,12 +1,8 @@
-module github.com/GoogleCloudPlatform/protoc-gen-bq-schema
+module github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3
 
-go 1.15
-
-replace github.com/GoogleCloudPlatform/protoc-gen-bq-schema/converter => ./internal/converter
+go 1.24.4
 
 require (
-	github.com/golang/glog v1.1.2
-	github.com/golang/protobuf v1.5.3
-	github.com/googleapis/googleapis v0.0.0-20231019093007-d1609218c37f // indirect
-	google.golang.org/protobuf v1.31.0
+	github.com/golang/glog v1.2.5
+	google.golang.org/protobuf v1.36.6
 )

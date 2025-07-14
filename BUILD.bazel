@@ -23,6 +23,11 @@ VERSION = "1.2.0"
 
 gazelle(name = "gazelle")
 
+exports_files(
+    ["defs.bzl"],
+    ["//visibility:public"],
+)
+
 go_library(
     name = "protoc-gen-bq-schema_lib",
     srcs = ["main.go"],
@@ -51,28 +56,6 @@ proto_plugin(
     ],
     tool = ":protoc_gen_bq_schema",
     visibility = ["//visibility:public"],
-)
-
-pkg_zip(
-    name = "protoc_gen_bq_schema_src",
-    srcs = glob(
-        [
-            "api/*",
-            "docs/**/*",
-            "internal/**/*",
-            "test/*.go",
-        ] + [
-            "main.go",
-            "BUILD.bazel",
-            "LICENSE",
-            "NOTICE",
-            "WORKSPACE",
-            "README.md",
-            "go.mod",
-        ],
-        allow_empty = True,
-    ),
-    out = "protoc_gen_bq_schema-v%s-src.zip" % VERSION,
 )
 
 pkg_zip(

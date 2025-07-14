@@ -1,5 +1,10 @@
 load("@rules_go//go:def.bzl", "go_library")
 
+exports_files([
+    "bq_field.pb.go",
+    "bq_table.pb.go",
+])
+
 go_library(
     name = "protos",
     srcs = [

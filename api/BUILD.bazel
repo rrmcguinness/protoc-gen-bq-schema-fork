@@ -1,6 +1,3 @@
-load("@rules_go//go:def.bzl", "go_library")
-load("@rules_go//proto:def.bzl", "go_proto_library")
-
 # Copyright 2014 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +12,15 @@ load("@rules_go//proto:def.bzl", "go_proto_library")
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//proto:def.bzl", "go_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_proto_grpc_doc//:defs.bzl", "doc_markdown_compile")
+
+exports_files([
+    "bq_field.proto",
+    "bq_table.proto",
+])
 
 proto_library(
     name = "bq_schema_proto_lib",
